@@ -78,7 +78,8 @@ def train(train_dataset, test_dataset, epochs, tr_urls):
 		for input_image, target in train_dataset:
 			print('epoch ' + str(epoch) + ' - train: ' + str(imgi) + '/' + str(len(tr_urls)))
 			imgi += 1
-			train_step(input_image, target, gen, discr, summary_writer, epoch)
+			train_step(input_image, target, gen, generator_optimizer, discr, discriminator_optimizer, summary_writer,
+					   epoch)
 		
 		if (epochs + 1) % 3 == 0:
 			checkpoint.save(file_prefix=variables.CHECK_DIR + 'ckpt')
