@@ -6,3 +6,5 @@ WIDTH = 512
 n = 7
 #Number of elements to train
 train_n = round(n * 0.8)
+
+epochs = 5

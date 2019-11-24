@@ -34,9 +34,7 @@ def get_random_file():
 	
 	train_urls = rand_urls[:variables.train_n]
 	test_urls = rand_urls[variables.train_n:variables.n]
-	
 	return train_urls, test_urls
-
 
 # Funcion que redimensionara la imagen a los valores que tiene el programa
 # Los valores se encuentran en variables.py
@@ -111,13 +109,13 @@ def load_image_train(file):
 def load_image_test(file):
 	return load_image(file, False)
 
-def get_datasets():
-	train_list , test_list = get_random_file()
-	train_dataset = tf.data.Dataset.from_tensor_slices(train_list)
+
+def get_datasets(tr_urls, ts_urls):
+	train_dataset = tf.data.Dataset.from_tensor_slices(tr_urls)
 	train_dataset = train_dataset.map(load_image_train, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 	train_dataset = train_dataset.batch(1)
 	
-	test_dataset = tf.data.Dataset.from_tensor_slices(test_list)
+	test_dataset = tf.data.Dataset.from_tensor_slices(ts_urls)
 	test_dataset = test_dataset.map(load_image_test)
 	test_dataset = test_dataset.batch(1)
 	return train_dataset, test_dataset
