@@ -2,7 +2,6 @@ import file_utils as fu
 #import variables
 
 train_urls, test_urls = fu.get_random_file()
-print(train_urls,test_urls)
 train_dataset, test_dataset = fu.get_datasets(train_urls,test_urls)
 
 #start traininig

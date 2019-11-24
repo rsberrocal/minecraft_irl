@@ -1,6 +1,8 @@
 import generator, discriminator
 from matplotlib import pyplot as plt
 import tensorflow as tf
+import numpy as np
+
 
 def generate_images(model, test_input, tar, display_img=True):
 	prediction = model(test_input, training=True)
@@ -20,25 +22,26 @@ def generate_images(model, test_input, tar, display_img=True):
 
 
 def train_step(input_image, target, gen, discr):
-	
 	with tf.GradientTape() as gen_tape, tf.GradientTape() as discr_tape:
-		output_image = gen(input_image, training=True)
-	
-		output_gen_discr = discr([output_image, input_image], training = True)
-	
-		output_target_discr = discr([target, input_image], training = True)
+		input_image = np.expand_dims(input_image, axis=0)
+		output_image = gen(((input_image + 1) * 255), training=True)
+		
+		input_image = np.squeeze(input_image, axis=0)
+		output_gen_discr = discr([input_image, output_image], training=True)
+		
+		output_target_discr = discr([target, input_image], training=True)
 		
 		discr_loss = discriminator.discriminator_loss(output_target_discr, output_gen_discr)
-	
+		
 		gen_loss = generator.generator_loss(output_gen_discr, output_image, target)
 		
-		generator_grads = gen_tape.gradients(gen_loss, generator.trainable_variables)
+		generator_grads = gen_tape.gradient(gen_loss, gen.trainable_variables)
 		
-		discriminator_grads = gen_tape.gradients(discr_loss, discr.trainable_variables)
+		discriminator_grads = discr_tape.gradient(discr_loss, discr.trainable_variables)
 		
 		generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 		
-		generator_optimizer.apply_gradients(zip(generator_grads,gen.trainable_variables))
+		generator_optimizer.apply_gradients(zip(generator_grads, gen.trainable_variables))
 		
 		discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 		
