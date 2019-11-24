@@ -63,24 +63,57 @@ def generator():
 
     encode_stack = [
 
-                                                        #(cantidad_imagenes, 512, 512, nª filtros
-                                                        #(en este caso 3 por el rgb)
-                                                        #input a la primera capa
-        #En la primera capa del encoder                 Outputs:
-            encoder_layer(64, apply_batchnorm=False),   #(bs, 256, 256, 64)
+                                                        # (cantidad_imagenes, 512, 512, nª filtros
+                                                        # (en este caso 3 por el rgb)
+                                                        # input a la primera capa
+        #En la primera capa del encoder                 O utputs:
+            encoder_layer(64, apply_batchnorm=False),   # (bs, 256, 256, 64)
 
-            encoder_layer(128),                         #(bs, 128, 128, 128)
-            encoder_layer(256),                         #(bs, 64, 64, 256)
-            encoder_layer(512),                         #(bs, 32, 32, 512)
-            encoder_layer(1024),                        #(bs, 16, 16, 1024)
-            encoder_layer(1024),                        #(bs, 8, 8, 1024)
-            encoder_layer(1024),                        #(bs, 4, 4, 1024)
-            encoder_layer(1024),                        #(bs, 2, 2, 1024)
-            encoder_layer(1024),                        #(bs, 1, 1, 1024)
+            encoder_layer(128),                         # (bs, 128, 128, 128)
+            encoder_layer(256),                         # (bs, 64, 64, 256)
+            encoder_layer(512),                         # (bs, 32, 32, 512)
+            encoder_layer(1024),                        # (bs, 16, 16, 1024)
+            encoder_layer(1024),                        # (bs, 8, 8, 1024)
+            encoder_layer(1024),                        # (bs, 4, 4, 1024)
+            encoder_layer(1024),                        # (bs, 2, 2, 1024)
+            encoder_layer(1024),                        # (bs, 1, 1, 1024)
     ]
     decode_stack = [
 
-    decoder_layer()
+            decoder_layer(1024),                        # (bs, 2, 2, 1024)
+            decoder_layer(1024),                        # (bs, 4, 4, 1024)
+            decoder_layer(1024),                        # (bs, 8, 8, 1024)
+            decoder_layer(1024),                        # (bs, 16, 16, 1024)
+            decoder_layer(512),                         # (bs, 32, 32, 512)
+            decoder_layer(256),                         # (bs, 64, 64, 256)
+            decoder_layer(128),                         # (bs, 128, 128, 128)
+            decoder_layer(64),                          # (bs, 256, 256, 64)
     ]
 
+    initializer = tf.random_normal_initializer(0, 0.02)
 
+    generation = keras.layers.Conv2DTranspose(
+                                                filters = 3,
+                                                kernel_size = 4,
+                                                strides = 2,
+                                                padding = "same",
+                                                kernel_initializer= initializer,
+                                                activation= "tanh"
+                                             )
+    x = inputs
+    S = []
+    concat = keras.layers.Concatenate()
+    for encode in  encode_stack:
+
+        x = encode(x)
+        S.append(x)
+
+    S = reversed(S[:-1])
+
+    for decode, sk in zip(decode_stack, S):
+
+        x = decode(x)
+        concat = ([x, sk])
+    generation=  generation(x)
+
+    return keras.Model(inputs = inputs, outputs = generation)
