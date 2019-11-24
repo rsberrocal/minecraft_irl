@@ -90,7 +90,7 @@ def get_real_path(path):
 	name = name + '1'
 	return variables.OUTPUT_DIR + name + ext
 
-
+@tf.function
 def load_image(file, augment=True):
 	inimg = tf.cast(tf.image.decode_jpeg(tf.io.read_file(variables.INPUT_DIR + '/' + file)), tf.float32)[..., :3]
 	reimg = tf.cast(tf.image.decode_jpeg(tf.io.read_file(variables.OUTPUT_DIR + '/' + file)), tf.float32)[..., :3]

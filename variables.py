@@ -7,4 +7,4 @@ n = 9
 #Number of elements to train
 train_n = round(n * 0.8)
 
-epochs = 5
+epochs = 2
