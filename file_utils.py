@@ -94,8 +94,7 @@ def get_real_path(path):
 
 def load_image(file, augment=True):
 	inimg = tf.cast(tf.image.decode_jpeg(tf.io.read_file(variables.INPUT_DIR + '/' + file)), tf.float32)[..., :3]
-	reimg = tf.cast(tf.image.decode_jpeg(tf.io.read_file(get_real_path(variables.INPUT_DIR + '/' + file))), tf.float32)[
-			..., :3]
+	reimg = tf.cast(tf.image.decode_jpeg(tf.io.read_file(variables.OUTPUT_DIR + '/' + file)), tf.float32)[..., :3]
 	
 	inimg, reimg = resize(inimg, reimg, variables.HEIGHT, variables.WIDTH)
 	if augment:
@@ -112,10 +111,17 @@ def load_image_train(file):
 def load_image_test(file):
 	return load_image(file, False)
 
+def get_list_data():
+	list_data = load_all_files()
+	return list_data[:variables.train_n], list_data[variables.train_n:variables.n]
 
-list_of_files = load_all_files()
-inp, res = load_image_train(list_of_files[0])
-plt.imshow((inp + 1) / 2)
-plt.show()
-plt.imshow((res + 1) / 2)
-plt.show()
+def get_datasets():
+	train_list , test_list = get_list_data()
+	train_dataset = tf.data.Dataset.from_tensor_slices(train_list)
+	train_dataset = train_dataset.map(load_image_train, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+	train_dataset = train_dataset.batch(1)
+	
+	test_dataset = tf.data.Dataset.from_tensor_slices(test_list)
+	test_dataset = test_dataset.map(load_image_test)
+	test_dataset = test_dataset.batch(1)
+	return train_dataset, test_dataset

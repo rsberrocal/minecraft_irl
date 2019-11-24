@@ -1,3 +1,7 @@
 .idea/misc.xml
 .idea/modules.xml
 .idea/minecraft_irl.iml
+__pycache__/file_utils.cpython-37.pyc
+__pycache__/dataset.cpython-37.pyc
+__pycache__/generator.cpython-37.pyc
+__pycache__/discriminator.cpython-37.pyc
