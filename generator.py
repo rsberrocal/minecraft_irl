@@ -57,7 +57,7 @@ def decoder_layer(filters, apply_dropout = True):
 
     return decoded
 
-def generator():
+def Generator():
     #Definimos como será la layer de entrada (Ancho, Alto, Codificacion colores(RGB == 3))
     inputs = tf.keras.layers.Input(shape= [variables.WIDTH,variables.HEIGHT,3])
 
@@ -117,3 +117,16 @@ def generator():
     generation=  generation(x)
 
     return keras.Model(inputs = inputs, outputs = generation)
+def generator_loss(disc_generated_output, gen_output, target):
+    LAMBDA = 100
+    loss_object = keras.losses.BinaryCrossentropy(from_logits=True)
+    gen_loss = loss_object(tf.ones_like(disc_generated_output), disc_generated_output)
+
+    #Error absoluto medio
+    mean_loss = tf.reduce_mean(tf.abs(target - gen_output))
+
+    total_gen_loss = gen_loss +(LAMBDA * mean_loss)
+
+    return total_gen_loss
+
+
