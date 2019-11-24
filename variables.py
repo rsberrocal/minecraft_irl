@@ -1,5 +1,7 @@
 INPUT_DIR = './inputs'
 OUTPUT_DIR = './outputs'
+LOG_DIR = './log'
+CHECK_DIR = './check/'
 HEIGHT = 512
 WIDTH = 512
 #Number of total elements

@@ -1,12 +1,13 @@
-from generator import Generator
 import generator
-
-from discriminator import Discriminator
 import discriminator
+
+import variables
 
 from matplotlib import pyplot as plt
 import tensorflow as tf
 import numpy as np
+import datetime
+import time
 
 
 def generate_images(model, test_input, tar):
@@ -16,7 +17,6 @@ def generate_images(model, test_input, tar):
 	display_list = [test_input[0], tar[0], prediction[0]]
 	title = ['Input Image', 'Ground Truth', 'Predicted Image']
 	
-
 	for i in range(3):
 		plt.subplot(1, 3, i + 1)
 		plt.title(title[i])
@@ -26,7 +26,7 @@ def generate_images(model, test_input, tar):
 	plt.show()
 
 
-def train_step(input_image, target, gen, discr):
+def train_step(input_image, target, gen, gen_opti, discr, discr_opti, summary, epoch):
 	with tf.GradientTape() as gen_tape, tf.GradientTape() as discr_tape:
 		input_aux = input_image
 		input_image = np.expand_dims(input_image, axis=0)
@@ -39,30 +39,55 @@ def train_step(input_image, target, gen, discr):
 		
 		discr_loss = discriminator.discriminator_loss(output_target_discr, output_gen_discr)
 		
-		gen_loss = generator.generator_loss(output_gen_discr, output_image, target)
-		
-		generator_grads = gen_tape.gradient(gen_loss, gen.trainable_variables)
-		
-		discriminator_grads = discr_tape.gradient(discr_loss, discr.trainable_variables)
-		
-		generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
-		
-		generator_optimizer.apply_gradients(zip(generator_grads, gen.trainable_variables))
-		
-		discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
-		
-		discriminator_optimizer.apply_gradients(zip(discriminator_grads, discr.trainable_variables))
+		gen_loss, gan_loss, l1_loss = generator.generator_loss(output_gen_discr, output_image, target)
+	
+	generator_grads = gen_tape.gradient(gen_loss, gen.trainable_variables)
+	
+	discriminator_grads = discr_tape.gradient(discr_loss, discr.trainable_variables)
+	
+	gen_opti.apply_gradients(zip(generator_grads, gen.trainable_variables))
+	
+	discr_opti.apply_gradients(zip(discriminator_grads, discr.trainable_variables))
+	
+	with summary.as_default():
+		tf.summary.scalar('gen_total_loss', gen_loss, step=epoch)
+		tf.summary.scalar('gen_gan_loss', gan_loss, step=epoch)
+		tf.summary.scalar('gen_l1_loss', l1_loss, step=epoch)
+		tf.summary.scalar('disc_loss', discr_loss, step=epoch)
 
 
 def train(train_dataset, test_dataset, epochs, tr_urls):
 	gen = generator.Generator()
+	generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 	discr = discriminator.Discriminator()
+	discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
+	checkpoint = tf.train.Checkpoint(
+		generator_optimizer=generator_optimizer,
+		discriminator_optimizer=discriminator_optimizer,
+		generator=gen,
+		discriminator=discr
+	)
+	checkpoint.restore(tf.train.latest_checkpoint(variables.CHECK_DIR)).assert_consumed()
+	
+	summary_writer = tf.summary.create_file_writer(
+		variables.LOG_DIR + '/' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+	
 	for epoch in range(epochs):
+		start = time.time()
+		
 		imgi = 0
 		for input_image, target in train_dataset:
 			print('epoch ' + str(epoch) + ' - train: ' + str(imgi) + '/' + str(len(tr_urls)))
 			imgi += 1
-			train_step(input_image, target, gen, discr)
+			train_step(input_image, target, gen, discr, summary_writer, epoch)
+		
+		if (epochs + 1) % 3 == 0:
+			checkpoint.save(file_prefix=variables.CHECK_DIR + 'ckpt')
+		
+		print('Time taken for epoch {} is {} sec\n'.format(epoch + 1, time.time() - start))
+	
+	checkpoint.save(file_prefix=variables.CHECK_DIR + 'ckpt')
+	
 	# clear
 	imgi = 0
 	for inp, tar in test_dataset.take(5):
