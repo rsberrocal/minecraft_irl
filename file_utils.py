@@ -111,12 +111,8 @@ def load_image_train(file):
 def load_image_test(file):
 	return load_image(file, False)
 
-def get_list_data():
-	list_data = load_all_files()
-	return list_data[:variables.train_n], list_data[variables.train_n:variables.n]
-
 def get_datasets():
-	train_list , test_list = get_list_data()
+	train_list , test_list = get_random_file()
 	train_dataset = tf.data.Dataset.from_tensor_slices(train_list)
 	train_dataset = train_dataset.map(load_image_train, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 	train_dataset = train_dataset.batch(1)
