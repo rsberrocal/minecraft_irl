@@ -2,7 +2,9 @@ import tensorflow as tf
 import variables
 from tensorflow import keras
 import file_utils
+import os
 from matplotlib import pyplot as plt
+import numpy as np
 def encoder_layer(filters, apply_batchnorm = True ):
 
     encoded = keras.Sequential()
@@ -61,7 +63,7 @@ def decoder_layer(filters, apply_dropout = True):
 
 def Generator():
     #Definimos como será la layer de entrada (Ancho, Alto, Codificacion colores(RGB == 3))
-    inputs = tf.keras.layers.Input(shape= [variables.WIDTH,variables.HEIGHT,3])
+    inputs = tf.keras.layers.Input(shape= [None,None,3])
 
     encode_stack = [
 
@@ -131,7 +133,18 @@ def generator_loss(disc_generated_output, gen_output, target):
 
     return total_gen_loss
 generator = Generator()
-ruta = file_utils.load_all_files()[0][0]
-gen_output = generator(((file_utils.load_image(ruta[0]) +1)*255), training= False)
+ruta = file_utils.load_all_files()
+path = "Users\sergi\Desktop\minecraft_irl\inputs"
+pathList = []
+
+
+
+inimg = ((file_utils.load_image(ruta[0])[0] +1)*255)
+print(inimg.shape)
+inimg = np.expand_dims(inimg, axis = 0)
+print(inimg.shape)
+
+gen_output = generator(inimg, training= False)
 plt.imshow(gen_output[0, ...])
+plt.show()
 
