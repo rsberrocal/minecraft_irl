@@ -1,4 +1,4 @@
-import generator, discriminator, dataset
+import generator, discriminator
 from matplotlib import pyplot as plt
 import tensorflow as tf
 
@@ -57,7 +57,3 @@ def train(train_dataset, test_dataset, epochs, tr_urls):
 	# clear
 	for inp, tar in test_dataset.take(5):
 		generate_images(generator, inp, tar, str(imgi) + '_' + str(epoch), )
-
-
-def get_dataset():
-	return []

@@ -36,6 +36,7 @@ def get_random_file():
 	test_urls = rand_urls[variables.train_n:variables.n]
 	return train_urls, test_urls
 
+
 # Funcion que redimensionara la imagen a los valores que tiene el programa
 # Los valores se encuentran en variables.py
 def resize(input_image, real_image, height, width):
