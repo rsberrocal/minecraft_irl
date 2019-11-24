@@ -67,7 +67,6 @@ def train(train_dataset, test_dataset, epochs, tr_urls):
 		generator=gen,
 		discriminator=discr
 	)
-	checkpoint.restore(tf.train.latest_checkpoint(variables.CHECK_DIR)).assert_consumed()
 	
 	summary_writer = tf.summary.create_file_writer(
 		variables.LOG_DIR + '/' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
@@ -87,6 +86,8 @@ def train(train_dataset, test_dataset, epochs, tr_urls):
 		print('Time taken for epoch {} is {} sec\n'.format(epoch + 1, time.time() - start))
 	
 	checkpoint.save(file_prefix=variables.CHECK_DIR + 'ckpt')
+	
+	checkpoint.restore(tf.train.latest_checkpoint(variables.CHECK_DIR))
 	
 	# clear
 	imgi = 0
