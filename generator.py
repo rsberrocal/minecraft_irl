@@ -1,6 +1,8 @@
 import tensorflow as tf
 import variables
 from tensorflow import keras
+import file_utils
+from matplotlib import pyplot as plt
 def encoder_layer(filters, apply_batchnorm = True ):
 
     encoded = keras.Sequential()
@@ -128,5 +130,8 @@ def generator_loss(disc_generated_output, gen_output, target):
     total_gen_loss = gen_loss +(LAMBDA * mean_loss)
 
     return total_gen_loss
-
+generator = Generator()
+ruta = file_utils.load_all_files()[0][0]
+gen_output = generator(((file_utils.load_image(ruta[0]) +1)*255), training= False)
+plt.imshow(gen_output[0, ...])
 
