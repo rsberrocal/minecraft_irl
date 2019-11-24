@@ -132,19 +132,4 @@ def generator_loss(disc_generated_output, gen_output, target):
     total_gen_loss = gen_loss +(LAMBDA * mean_loss)
 
     return total_gen_loss
-generator = Generator()
-ruta = file_utils.load_all_files()
-path = "Users\sergi\Desktop\minecraft_irl\inputs"
-pathList = []
-
-
-
-inimg = ((file_utils.load_image(ruta[0])[0] +1)*255)
-print(inimg.shape)
-inimg = np.expand_dims(inimg, axis = 0)
-print(inimg.shape)
-
-gen_output = generator(inimg, training= False)
-plt.imshow(gen_output[0, ...])
-plt.show()
 
